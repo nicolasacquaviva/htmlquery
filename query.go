@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"reflect"
 
 	"github.com/antchfx/xpath"
 	"golang.org/x/net/html"
@@ -94,12 +95,23 @@ func QuerySelectorAll(top *html.Node, selector *xpath.Expr) []*html.Node {
 }
 
 // LoadURL loads the HTML document from the specified URL.
-func LoadURL(url string) (*html.Node, error) {
-	resp, err := http.Get(url)
+func LoadURL(url string, headers []http.Header) (*html.Node, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+
+	for _, header := range headers {
+		for _, key := range reflect.ValueOf(header).MapKeys() {
+			req.Header.Add(key.String(), header.Get(key.String()))
+		}
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
 
 	r, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
 	if err != nil {

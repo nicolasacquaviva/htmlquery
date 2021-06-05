@@ -22,7 +22,7 @@ const htmlSample = `<!DOCTYPE html><html lang="en-US">
 <header>
 	<!-- Logo -->
    <h1>City Gallery</h1>
-</header>  
+</header>
 <nav>
   <ul>
     <li><a href="/London">London</a></li>
@@ -73,7 +73,13 @@ func TestLoadURL(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	_, err := LoadURL(ts.URL)
+	var headerValue []string
+	var headers []http.Header
+
+	headerValue = append(headerValue, "Chrome: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36")
+	header := &http.Header{"User-Agent": headerValue}
+	headers = append(headers, *header)
+	_, err := LoadURL(ts.URL, headers)
 	if err != nil {
 		t.Fatal(err)
 	}
